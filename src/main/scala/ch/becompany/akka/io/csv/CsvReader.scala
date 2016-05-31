@@ -1,6 +1,6 @@
 package ch.becompany.akka.io.csv
 
-import java.io.{File, FileInputStream, InputStream}
+import java.io.InputStream
 import java.nio.file.{Files, Paths}
 
 import akka.stream.IOResult
@@ -10,24 +10,18 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.StreamConverters._
 import akka.util.ByteString
 import ch.becompany.akka.io.{DetectEncoding, IoError, SourceNotFound}
-import org.mozilla.universalchardet.UniversalDetector
 import shapeless._
-import shapeless.ops.traversable.FromTraversable
-import shapeless.ops.traversable.FromTraversable._
-import syntax.std.traversable._
 
 import scala.concurrent.Future
-import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
 
-class CsvReader[T <: HList](spec: CsvSpec = CsvSpec()) {
+class CsvReader[L](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[L]) {
 
   /**
     * Reads a CSV from a file.
     * @param path The path.
     * @return Either an error or the CSV source.
     */
-  def fromFile(path: String): Either[IoError, Source[T, Future[IOResult]]] = {
+  def fromFile(path: String): Either[IoError, Source[L, Future[IOResult]]] = {
     val pathObj = Paths.get(path)
     if (Files.isRegularFile(pathObj)) {
       getEncoding(Files.newInputStream(pathObj)).right.map { enc =>
@@ -43,7 +37,7 @@ class CsvReader[T <: HList](spec: CsvSpec = CsvSpec()) {
     * @param path The path.
     * @return Either an error or the CSV source.
     */
-  def fromResource(name: String): Either[IoError, Source[T, Future[IOResult]]] = {
+  def fromResource(name: String): Either[IoError, Source[L, Future[IOResult]]] = {
     def inputStream = getClass.getResourceAsStream(name)
     if (inputStream == null) {
       Left(SourceNotFound)
@@ -58,21 +52,21 @@ class CsvReader[T <: HList](spec: CsvSpec = CsvSpec()) {
     spec.encoding.fold(DetectEncoding(in))(Right(_))
 
   private def read(source: Source[ByteString, Future[IOResult]], encoding: String):
-      Source[T, Future[IOResult]] =
+      Source[L, Future[IOResult]] =
     source.
       via(delimiter(ByteString(spec.lineDelimiter), Int.MaxValue)).
       map(_.decodeString(encoding)).
       map(readLine).
-      map(parseLine)
+      map(parseLine).
+      map(_.fold[Option[L]](errors => { println(errors); None }, Some(_))).
+      filter(_.isDefined).
+      map(_.get)
 
-  private def readLine(line: String): List[Option[String]] =
-    spec.fieldDelimiter.split(line).
-      toList.
-      map(_.trim).
-      map(s => if (s.isEmpty) None else Some(s))
+  private def readLine(line: String): List[String] =
+    spec.fieldDelimiter.split(line).toList.map(_.trim)
 
-  private def parseLine(line: List[Option[String]]): T = {
-    implicit val fl = FromTraversable[T]
-    line.toHList[T].get
+  private def parseLine(line: List[String]): Either[List[String], L] = {
+    LineParser[L](line)
   }
+
 }

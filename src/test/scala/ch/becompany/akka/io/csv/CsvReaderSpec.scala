@@ -9,6 +9,8 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class CsvReaderSpec extends FlatSpec with Matchers with ScalaFutures {
 
+  import Parsers._
+
   implicit val system = ActorSystem("UserImporter")
   implicit val materializer = ActorMaterializer()
 
@@ -26,9 +28,11 @@ class CsvReaderSpec extends FlatSpec with Matchers with ScalaFutures {
         //val counter = Sink.fold[Int, Animal](0){ (c, x) => c + 1 }
         source.runWith(TestSink.probe[Animal])
           .request(3)
-          .expectNext(Animal("Bolt", "dog"), Animal("Mittens", "cat"), Animal("Rhino", "hamster"))
+          .expectNext(
+            Animal("Bolt", "dog"),
+            Animal("Mittens", "cat"),
+            Animal("Rhino", "hamster"))
           .expectComplete()
-
       }
     }
   }
