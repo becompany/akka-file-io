@@ -6,6 +6,7 @@ object Dependencies {
   val jUniversalChardetVersion = "1.0.3"
   val akkaVersion = "2.4.6"
   val shapelessVersion = "2.3.1"
+  val scalaCsvVersion = "1.3.1"
 
   val scalactic = "org.scalactic" %% "scalactic" % scalaTestVersion
   val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
@@ -13,6 +14,7 @@ object Dependencies {
   val akkaStreams = "com.typesafe.akka" %% "akka-stream" % akkaVersion
   val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion
   val shapeless = "com.chuusai" %% "shapeless" % shapelessVersion
+  val scalaCsv = "com.github.tototoshi" %% "scala-csv" % scalaCsvVersion
   
   val dependencies = Seq(
     scalactic,
@@ -20,7 +22,8 @@ object Dependencies {
     jUniversalChardet,
     akkaStreams,
     akkaStreamTestkit,
-    shapeless
+    shapeless,
+    scalaCsv
   )
 
 }

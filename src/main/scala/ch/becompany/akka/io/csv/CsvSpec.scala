@@ -11,7 +11,7 @@ import scala.util.matching.Regex
   */
 case class CsvSpec(
   lineDelimiter: String = "\n",
-  fieldDelimiter: Regex = ","r,
-  quote: Option[Char] = None,
+  fieldDelimiter: Char = ',',
+  quote: Char = '"',
   encoding: Option[String] = None
 )

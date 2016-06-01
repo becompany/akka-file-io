@@ -12,7 +12,7 @@ object LineParser {
     def apply(s: List[String]): Either[List[String], HNil] =
       s match {
         case Nil => Right(HNil)
-        case _ => Left(List("Expected end of line."))
+        case h +: t => Left(List(s"""Expected end of line, got "$h"."""))
       }
   }
 

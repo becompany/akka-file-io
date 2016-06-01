@@ -10,11 +10,12 @@ import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.StreamConverters._
 import akka.util.ByteString
 import ch.becompany.akka.io.{DetectEncoding, IoError, SourceNotFound}
+import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat, QUOTE_MINIMAL, Quoting}
 import shapeless._
 
 import scala.concurrent.Future
 
-class CsvReader[L](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[L]) {
+class CsvReader[L](spec: CsvSpec = CsvSpec(), splitLine: String => Either[String, List[String]])(implicit parser: LineParser[L]) {
 
   /**
     * Reads a CSV from a file.
@@ -56,17 +57,15 @@ class CsvReader[L](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[L]) {
     source.
       via(delimiter(ByteString(spec.lineDelimiter), Int.MaxValue)).
       map(_.decodeString(encoding)).
-      map(readLine).
       map(parseLine).
       map(_.fold[Option[L]](errors => { println(errors); None }, Some(_))).
       filter(_.isDefined).
       map(_.get)
 
-  private def readLine(line: String): List[String] =
-    spec.fieldDelimiter.split(line).toList.map(_.trim)
-
-  private def parseLine(line: List[String]): Either[List[String], L] = {
-    LineParser[L](line)
-  }
+  private def parseLine(line: String): Either[List[String], L] =
+    splitLine(line) match {
+      case Right(fields) => LineParser[L](fields.map(_.trim))
+      case Left(error) => Left(List(error))
+    }
 
 }
