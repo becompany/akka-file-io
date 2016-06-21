@@ -1,14 +1,16 @@
 package ch.becompany.akka.io
 
-import java.io.InputStream
+import java.io.{InputStream, UnsupportedEncodingException}
 
 import org.mozilla.universalchardet.UniversalDetector
+
+import scala.util.{Failure, Success, Try}
 
 object UnsupportedEncoding extends IoError
 
 object DetectEncoding {
 
-  def apply(in: InputStream): Either[IoError, String] =
+  def apply(in: InputStream): String =
     try {
       val detector = new UniversalDetector(null)
       var nread: Int = 0
@@ -19,8 +21,8 @@ object DetectEncoding {
       detector.dataEnd()
 
       detector.getDetectedCharset() match {
-        case null => Left(UnsupportedEncoding)
-        case s => Right(s)
+        case null => throw new UnsupportedEncodingException()
+        case s => s
       }
     } finally {
       in.close()

@@ -1,6 +1,6 @@
 package ch.becompany.akka.io.csv
 
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{FlowOps, Source}
 import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat, QUOTE_MINIMAL, Quoting}
 
 class Csv[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
@@ -19,14 +19,14 @@ class Csv[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
   }
 
   /**
-    * Transforms a source of strings into a source of CSV records.
+    * Transforms a flow of strings into a flow of CSV records.
     * Invalid records will be skipped.
     *
     * @param source The source.
-    * @tparam O The materialized value type.
+    * @tparam Mat The materialized value type.
     * @return The transformed source.
     */
-  def read[O](source: Source[String, O]): Source[T, O] =
+  def read[Mat](source: Source[String, Mat]): Source[T, Mat] =
     source.
       map(parseLine).
       map(_.fold[Option[T]](errors => { println(errors); None }, Some(_))).
