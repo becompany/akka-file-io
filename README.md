@@ -1,6 +1,10 @@
 # Akka File IO
 
-Library for common file IO tasks.
+Library for common file IO tasks in conjunction with Akka streams:
+
+* Read from file (statically, continuously)
+* Read from resource
+* Parse CSV streams
 
 ## API documentation
 
