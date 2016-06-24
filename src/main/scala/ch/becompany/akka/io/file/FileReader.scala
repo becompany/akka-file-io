@@ -15,6 +15,9 @@ import org.apache.commons.io.input.{Tailer, TailerListenerAdapter}
 
 import scala.concurrent.Future
 
+/**
+  * Provides methods to read a file as `akka.stream.scaladsl.Source`.
+  */
 object FileReader {
 
   implicit val system = ActorSystem("akka-file-io")
@@ -41,7 +44,7 @@ object FileReader {
     }
 
   /**
-    * Read a file continuously.
+    * Reads a file continuously. Currently it is not possible to stop the reading process.
     *
     * @param path The path.
     * @return Either an error or the source.
