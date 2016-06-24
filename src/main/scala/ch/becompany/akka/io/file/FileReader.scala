@@ -1,5 +1,6 @@
 package ch.becompany.akka.io.file
 
+import java.nio.charset.Charset
 import java.nio.file.{Files, Path, Paths}
 
 import akka.NotUsed
@@ -7,9 +8,10 @@ import akka.actor.{ActorSystem, Props}
 import akka.stream.actor.ActorPublisher
 import akka.stream.scaladsl.Framing._
 import akka.stream.scaladsl.{FileIO, Source}
-import akka.stream.{ActorMaterializer, IOResult}
+import akka.stream.{ActorMaterializer, IOResult, OverflowStrategy}
 import akka.util.ByteString
 import ch.becompany.akka.io.DetectEncoding
+import org.apache.commons.io.input.{Tailer, TailerListenerAdapter}
 
 import scala.concurrent.Future
 
@@ -44,14 +46,16 @@ object FileReader {
     * @param path The path.
     * @return Either an error or the source.
     */
-  def readContinuously(path: String, end: Boolean, encoding: Option[String] = None): Source[String, NotUsed] =
-    withFile(path, encoding) { (path, enc) =>
-      val tailPublisher = system.actorOf(Props[TailPublisher])
-      val src = Source.
-        fromPublisher(ActorPublisher[ByteString](tailPublisher)).
-        map(_.decodeString(enc))
-      new Tailer(path, enc, end, tailPublisher).run()
-      src
-    }
+  def readContinuously(path: String, end: Boolean, encoding: Option[String] = None): Source[String, _] = {
+    val charset = encoding.map(Charset.forName).getOrElse(Charset.defaultCharset)
+    Source.queue[String](bufferSize = 1000, OverflowStrategy.fail).
+      mapMaterializedValue { queue =>
+        Tailer.create(Paths.get(path).toFile, charset, new TailerListenerAdapter {
+          override def handle(line: String): Unit = {
+            queue.offer(line)
+          }
+        }, 1000, false, false, 4096)
+      }
+  }
 
 }

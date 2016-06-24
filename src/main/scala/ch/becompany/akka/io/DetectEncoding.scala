@@ -6,8 +6,6 @@ import org.mozilla.universalchardet.UniversalDetector
 
 import scala.util.{Failure, Success, Try}
 
-object UnsupportedEncoding extends IoError
-
 object DetectEncoding {
 
   def apply(in: InputStream): String =
