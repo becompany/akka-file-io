@@ -11,6 +11,9 @@ lazy val akkaFileIo = (
     name := "akka-file-io",
     version := "1.0.0-SNAPSHOT",
     scalaVersion := "2.11.8",
-    libraryDependencies ++= dependencies
+    libraryDependencies ++= dependencies,
+    ghpages.settings,
+    git.remoteRepo := "git@github.com:becompany/akka-file-io.git"
   )
+  enablePlugins(SiteScaladocPlugin)
 )
