@@ -3,7 +3,7 @@ package ch.becompany.akka.io.csv
 import akka.stream.scaladsl.{FlowOps, Source}
 import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat, QUOTE_MINIMAL, Quoting}
 
-class Csv[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
+class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
 
   private lazy val lineParser = new CSVParser(new DefaultCSVFormat() {
     override val delimiter: Char = spec.fieldDelimiter

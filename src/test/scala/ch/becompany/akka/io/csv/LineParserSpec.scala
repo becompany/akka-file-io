@@ -4,6 +4,8 @@ import org.scalatest._
 
 class LineParserSpec extends FlatSpec with Matchers with EitherValues {
 
+  import Parsers._
+
   case class Record(a: String, b: String)
 
   "A LineParser" should "parse lines" in {

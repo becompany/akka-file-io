@@ -3,12 +3,9 @@ package ch.becompany.akka.io.file
 import java.nio.charset.Charset
 import java.nio.file.{Files, Path, Paths}
 
-import akka.NotUsed
-import akka.actor.{ActorSystem, Props}
-import akka.stream.actor.ActorPublisher
 import akka.stream.scaladsl.Framing._
 import akka.stream.scaladsl.{FileIO, Source}
-import akka.stream.{ActorMaterializer, IOResult, OverflowStrategy}
+import akka.stream.{IOResult, OverflowStrategy}
 import akka.util.ByteString
 import ch.becompany.akka.io.DetectEncoding
 import org.apache.commons.io.input.{Tailer, TailerListenerAdapter}
@@ -16,12 +13,9 @@ import org.apache.commons.io.input.{Tailer, TailerListenerAdapter}
 import scala.concurrent.Future
 
 /**
-  * Provides methods to read a file as `akka.stream.scaladsl.Source`.
+  * Provides methods to read a file as an `akka.stream.scaladsl.Source`.
   */
 object FileReader {
-
-  implicit val system = ActorSystem("akka-file-io")
-  implicit val materializer = ActorMaterializer()
 
   private def withFile[T](path: String, encoding: Option[String])(f: (Path, String) => T): T = {
     val pathObj = Paths.get(path)
