@@ -11,3 +11,9 @@ Library for common file IO tasks in conjunction with Akka streams:
 ## API documentation
 
 * [Latest](http://becompany.github.io/akka-file-io/latest/api/)
+
+## Building
+
+### Publish github pages
+
+    $ sbt ghpagesPushSite
