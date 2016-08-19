@@ -23,9 +23,9 @@ class ResourceReaderSpec extends FlatSpec with Matchers with ScalaFutures {
       runWith(TestSink.probe[String]).
       request(3).
       expectNext(
-        "Bolt, dog",
-        "Mittens, cat",
-        "Rhino, hamster").
+        "Bolt, 3, dog",
+        "Mittens, 2, cat",
+        "Rhino, 1, hamster").
       expectComplete()
   }
 
