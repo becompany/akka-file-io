@@ -14,7 +14,7 @@ class CsvReaderSpec extends FlatSpec with Matchers {
   implicit val system = ActorSystem("UserImporter")
   implicit val materializer = ActorMaterializer()
 
-  case class Animal(name: String, species: String)
+  case class Animal(name: String, age: Int, species: String)
 
   val spec = CsvSpec(encoding = Some("UTF-8"))
   val reader = new CsvReader[Animal](spec)
@@ -26,9 +26,9 @@ class CsvReaderSpec extends FlatSpec with Matchers {
       runWith(TestSink.probe[Animal]).
       request(3).
       expectNext(
-        Animal("Bolt", "dog"),
-        Animal("Mittens", "cat"),
-        Animal("Rhino", "hamster")).
+        Animal("Bolt", 3, "dog"),
+        Animal("Mittens", 2, "cat"),
+        Animal("Rhino", 1, "hamster")).
       expectComplete()
   }
 
