@@ -9,7 +9,7 @@ lazy val akkaFileIo = (
   settings(
     organization := "ch.becompany",
     name := "akka-file-io",
-    version := "0.1.0",
+    version := "0.1.1-SNAPSHOT",
     scalaVersion := "2.11.8",
     libraryDependencies ++= dependencies,
 
