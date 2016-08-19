@@ -1,44 +1,46 @@
 package ch.becompany.akka.io.csv
 
+import cats._
+import cats.data.Validated
+import cats.data.Validated._
+import cats.data.{NonEmptyList => NEL}
+import cats.std.all._
+import cats.syntax.cartesian._
 import shapeless.{::, Generic, HList, HNil}
 
 trait LineParser[T] {
-  def apply(l: List[String]): Either[List[String], T]
+  def apply(l: List[String]): LineResult[T]
 }
 
 object LineParser {
 
+  implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
+
   implicit val hnilParser: LineParser[HNil] = new LineParser[HNil] {
-    def apply(s: List[String]): Either[List[String], HNil] =
+    def apply(s: List[String]): LineResult[HNil] =
       s match {
-        case Nil => Right(HNil)
-        case h +: t => Left(List(s"""Expected end, got "$h"."""))
+        case Nil => Valid(HNil)
+        case h +: t => Invalid(NEL(s"""Expected end, got "$h"."""))
       }
   }
 
   implicit def hconsParser[H : Parser, T <: HList : LineParser]: LineParser[H :: T] =
     new LineParser[H :: T] {
-      def apply(s: List[String]): Either[List[String], H :: T] = s match {
-        case Nil => Left(List("Excepted list element."))
-        case h +: t => {
-          val head = implicitly[Parser[H]].apply(h)
+      def apply(s: List[String]): LineResult[H :: T] = s match {
+        case Nil => invalid(NEL("Excepted list element."))
+        case h +: t =>
+          val head = implicitly[Parser[H]].apply(h).toValidatedNel
           val tail = implicitly[LineParser[T]].apply(t)
-          (head, tail) match {
-            case (Left(error), Left(errors)) => Left(error :: errors)
-            case (Left(error), Right(_)) => Left(error :: Nil)
-            case (Right(_), Left(errors)) => Left(errors)
-            case (Right(h), Right(t)) => Right(h :: t)
-          }
-        }
+          (head |@| tail) map { _ :: _ }
       }
     }
 
   implicit def caseClassParser[A, R <: HList]
   (implicit gen: Generic[A] { type Repr = R }, reprParser: LineParser[R]): LineParser[A] =
     new LineParser[A] {
-      def apply(s: List[String]): Either[List[String], A] =
-        reprParser.apply(s).right.map(gen.from)
+      def apply(s: List[String]): LineResult[A] =
+        reprParser.apply(s).map(gen.from)
     }
 
-  def apply[A](s: List[String])(implicit parser: LineParser[A]): Either[List[String], A] = parser(s)
+  def apply[A](s: List[String])(implicit parser: LineParser[A]): LineResult[A] = parser(s)
 }

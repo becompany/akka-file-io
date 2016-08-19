@@ -1,25 +1,27 @@
 package ch.becompany.akka.io.csv
 
 import scala.util.{Success, Try}
+import cats.data.Validated
+import cats.data.Validated.{invalid, valid}
 
 trait Parser[T] {
-  def apply(s: String): Either[String, T]
+  def apply(s: String): Validated[String, T]
 }
 
 trait TryParser[T] extends Parser[T] {
 
   def parse(s: String): T
 
-  def apply(s: String): Either[String, T] =
+  def apply(s: String): Validated[String, T] =
     Try(parse(s)).transform(
-      s => Success(Right(s)),
-      f => Success(Left(f.getMessage))).get
+      s => Success(valid(s)),
+      f => Success(invalid(f.getMessage))).get
 }
 
 object Parsers {
 
   implicit val stringParser: Parser[String] = new Parser[String] {
-    def apply(s: String): Either[String, String] = Right(s)
+    def apply(s: String) = valid(s)
   }
 
   implicit val intParser: Parser[Int] = new TryParser[Int] {

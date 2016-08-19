@@ -1,6 +1,8 @@
 package ch.becompany.akka.io.csv
 
 import akka.stream.scaladsl.{FlowOps, Source}
+import cats.data.{NonEmptyList, Validated}
+import cats.data.Validated.{invalid, valid}
 import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat, QUOTE_MINIMAL, Quoting}
 
 class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
@@ -11,25 +13,23 @@ class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
     override val quoting: Quoting = QUOTE_MINIMAL
   })
 
-  private def parseLine(line: String): Either[List[String], T] = {
+  private def parseLine(line: String): LineResult[T] = {
     lineParser.parseLine(line) match {
       case Some(fields) => LineParser[T](fields.map(_.trim))
-      case None => Left(List(s"Invalid line: $line"))
+      case None => invalid(NonEmptyList(s"Invalid line: $line"))
     }
   }
 
   /**
-    * Transforms a flow of strings into a flow of CSV records.
-    * Invalid records will be skipped.
+    * Transforms a flow of strings into a flow of `Try`s of CSV records.
     *
     * @param source The source.
     * @tparam Mat The materialized value type.
     * @return The transformed source.
     */
-  def read[Mat](source: Source[String, Mat]): Source[T, Mat] =
+  def read[Mat](source: Source[String, Mat]): Source[LineResult[T], Mat] =
     source.
-      map(parseLine).
-      map(_.fold[Option[T]](errors => { println(errors); None }, Some(_))).
-      collect { case Some(t) => t }
+      map(parseLine)
+      //map(_.fold[Option[T]](errors => { println(errors); None }, Some(_)))
 
 }
