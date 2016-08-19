@@ -49,7 +49,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Provides methods to read a classpath resource as an <code>akka.stream.scaladsl.Source</code>.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -345,23 +346,23 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="ch.becompany.akka.io.file.ResourceReader#read" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="read(name:String):akka.stream.scaladsl.Source[String,scala.concurrent.Future[akka.stream.IOResult]]"></a>
-      <a id="read(String):Source[String,Future[IOResult]]"></a>
+      <a id="read(name:String,encoding:Option[String]):akka.stream.scaladsl.Source[String,scala.concurrent.Future[akka.stream.IOResult]]"></a>
+      <a id="read(String,Option[String]):Source[String,Future[IOResult]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">read</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="akka.stream.IOResult">IOResult</span>]]</span>
+        <span class="name">read</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="encoding">encoding: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="akka.stream.IOResult">IOResult</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#ch.becompany.akka.io.file.ResourceReader$@read(name:String):akka.stream.scaladsl.Source[String,scala.concurrent.Future[akka.stream.IOResult]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#ch.becompany.akka.io.file.ResourceReader$@read(name:String,encoding:Option[String]):akka.stream.scaladsl.Source[String,scala.concurrent.Future[akka.stream.IOResult]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Reads from a resource.</p><div class="fullcomment"><div class="comment cmt"><p>Reads from a resource.
-</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>The name.</p></dd><dt>returns</dt><dd class="cmt"><p>Either an error or the source.</p></dd></dl></div>
+</p></div><dl class="paramcmts block"><dt class="param">name</dt><dd class="cmt"><p>The name.</p></dd><dt class="param">encoding</dt><dd class="cmt"><p>The optional encoding, detected by default.</p></dd><dt>returns</dt><dd class="cmt"><p>Either an error or the source.</p></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
