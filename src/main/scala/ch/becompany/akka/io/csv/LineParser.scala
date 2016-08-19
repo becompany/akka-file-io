@@ -16,7 +16,7 @@ object LineParser {
       }
   }
 
-  implicit def hconsParser[H: Parser, T <: HList : LineParser]: LineParser[H :: T] =
+  implicit def hconsParser[H : Parser, T <: HList : LineParser]: LineParser[H :: T] =
     new LineParser[H :: T] {
       def apply(s: List[String]): Either[List[String], H :: T] = s match {
         case Nil => Left(List("Excepted list element."))
