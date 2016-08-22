@@ -30,6 +30,5 @@ class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
   def read[Mat](source: Source[String, Mat]): Source[LineResult[T], Mat] =
     source.
       map(parseLine)
-      //map(_.fold[Option[T]](errors => { println(errors); None }, Some(_)))
 
 }

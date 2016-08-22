@@ -13,12 +13,18 @@ trait TryParser[T] extends Parser[T] {
   def parse(s: String): T
 
   def apply(s: String): Validated[String, T] =
-    Try(parse(s)).transform(
-      s => Success(valid(s)),
-      f => Success(invalid(f.getMessage))).get
+    Validated.fromTry(Try(parse(s))).leftMap(t => s"${t.getClass} ${t.getMessage}")
 }
 
 object Parsers {
+
+  implicit def optionParser[T](implicit parser: Parser[T]): Parser[Option[T]] =
+    new Parser[Option[T]] {
+      def apply(s: String) = s match {
+        case "" => valid(None)
+        case t => parser(t).map(Some(_))
+      }
+    }
 
   implicit val stringParser: Parser[String] = new Parser[String] {
     def apply(s: String) = valid(s)
