@@ -2,6 +2,7 @@ package ch.becompany.akka.io.csv
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import cats.data.Validated.Valid
 import ch.becompany.akka.io.file.ResourceReader
@@ -16,12 +17,28 @@ class CsvReaderSpec extends FlatSpec with Matchers {
 
   case class Animal(name: String, age: Int, species: String)
 
-  val spec = CsvSpec(encoding = Some("UTF-8"))
-  val reader = new CsvReader[Animal](spec)
-  val resource = "/ch/becompany/akka/io/csv/animals.csv"
+  val reader = new CsvReader[Animal]
+
+  val lines = Seq(
+    "Bolt, 3, dog",
+    "Mittens, 2, cat",
+    "Rhino, 1, hamster"
+  )
 
   "CSV reader" should "read CSV files" in {
-    val src = ResourceReader.read(resource, Some("UTF-8"))
+    val src = Source.fromIterator(() => lines.iterator)
+    reader.read(src).
+      runWith(TestSink.probe[LineResult[Animal]]).
+      request(3).
+      expectNext(
+        Valid(Animal("Bolt", 3, "dog")),
+        Valid(Animal("Mittens", 2, "cat")),
+        Valid(Animal("Rhino", 1, "hamster"))).
+      expectComplete()
+  }
+
+  "CSV reader" should "ignore comments" in {
+    val src = Source.fromIterator(() => (" # comment" +: lines).iterator)
     reader.read(src).
       runWith(TestSink.probe[LineResult[Animal]]).
       request(3).

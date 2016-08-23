@@ -16,6 +16,12 @@ trait TryParser[T] extends Parser[T] {
     Validated.fromTry(Try(parse(s))).leftMap(t => s"${t.getClass} ${t.getMessage}")
 }
 
+object TryParser {
+  def apply[T](parseFunc: String => T): TryParser[T] = new TryParser[T] {
+    def parse(s: String): T = parseFunc(s)
+  }
+}
+
 object Parsers {
 
   implicit def optionParser[T](implicit parser: Parser[T]): Parser[Option[T]] =
@@ -30,12 +36,10 @@ object Parsers {
     def apply(s: String) = valid(s)
   }
 
-  implicit val intParser: Parser[Int] = new TryParser[Int] {
-    def parse(s: String): Int = s.toInt
-  }
+  implicit val intParser: Parser[Int] = TryParser(_.toInt)
 
-  implicit val longParser: Parser[Long] = new TryParser[Long] {
-    def parse(s: String): Long = s.toLong
-  }
+  implicit val longParser: Parser[Long] = TryParser(_.toLong)
+
+  implicit val doubleParser: Parser[Double] = TryParser(_.toDouble)
 
 }

@@ -7,6 +7,8 @@ import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat, QUOTE_MINIMAL, Quo
 
 class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
 
+  private val commentPattern = "^\\s+#".r
+
   private lazy val lineParser = new CSVParser(new DefaultCSVFormat() {
     override val delimiter: Char = spec.fieldDelimiter
     override val quoteChar: Char = spec.quote
@@ -29,6 +31,7 @@ class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
     */
   def read[Mat](source: Source[String, Mat]): Source[LineResult[T], Mat] =
     source.
+      filterNot(commentPattern.findFirstIn(_).isDefined).
       map(parseLine)
 
 }
