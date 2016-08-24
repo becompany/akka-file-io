@@ -13,7 +13,7 @@ trait TryParser[T] extends Parser[T] {
   def parse(s: String): T
 
   def apply(s: String): Validated[String, T] =
-    Validated.fromTry(Try(parse(s))).leftMap(t => s"${t.getClass} ${t.getMessage}")
+    Validated.fromTry(Try(parse(s))).leftMap(t => s"${t.getClass.getName} ${t.getMessage}")
 }
 
 object TryParser {

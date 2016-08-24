@@ -6,7 +6,39 @@ import cats.data.Validated._
 import cats.data.{NonEmptyList => NEL}
 import cats.std.all._
 import cats.syntax.cartesian._
-import shapeless.{::, Generic, HList, HNil}
+import shapeless._
+import shapeless.labelled.FieldType
+import shapeless.ops.hlist._
+import shapeless.ops.record.Keys
+
+trait HListParser[T <: HList] {
+  def apply(l: List[(String, String)]): LineResult[T]
+}
+
+object HListParser {
+
+  implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
+
+  implicit val hnilParser: HListParser[HNil] = new HListParser[HNil] {
+    def apply(s: List[(String, String)]): LineResult[HNil] =
+      s match {
+        case Nil => Valid(HNil)
+        case h +: t => Invalid(NEL(s"""Expected end, got "$h"."""))
+      }
+  }
+
+  implicit def hconsParser[H, T <: HList](implicit
+      headParser: Parser[H],
+      tailParser: HListParser[T]): HListParser[H :: T] =
+    new HListParser[H :: T] {
+      def apply(s: List[(String, String)]): LineResult[H :: T] = s match {
+        case Nil => invalid(NEL("Excepted list element."))
+        case (h, label) +: t =>
+          (headParser(h).leftMap(s"[$label] " + _).toValidatedNel |@| tailParser(t)) map { _ :: _ }
+      }
+    }
+
+}
 
 trait LineParser[T] {
   def apply(l: List[String]): LineResult[T]
@@ -14,32 +46,24 @@ trait LineParser[T] {
 
 object LineParser {
 
-  implicit val nelSemigroup: Semigroup[NEL[String]] = SemigroupK[NEL].algebra[String]
-
-  implicit val hnilParser: LineParser[HNil] = new LineParser[HNil] {
-    def apply(s: List[String]): LineResult[HNil] =
-      s match {
-        case Nil => Valid(HNil)
-        case h +: t => Invalid(NEL(s"""Expected end, got "$h"."""))
-      }
+  trait toNameLP extends Poly1 {
+    implicit def default[A] = at[A](_ => "")
   }
 
-  implicit def hconsParser[H : Parser, T <: HList : LineParser]: LineParser[H :: T] =
-    new LineParser[H :: T] {
-      def apply(s: List[String]): LineResult[H :: T] = s match {
-        case Nil => invalid(NEL("Excepted list element."))
-        case h +: t =>
-          val head = implicitly[Parser[H]].apply(h).toValidatedNel
-          val tail = implicitly[LineParser[T]].apply(t)
-          (head |@| tail) map { _ :: _ }
-      }
-    }
+  object toName extends toNameLP {
+    implicit def keyToName[A] = at[Symbol with A](_.name)
+  }
 
-  implicit def caseClassParser[A, R <: HList]
-  (implicit gen: Generic[A] { type Repr = R }, reprParser: LineParser[R]): LineParser[A] =
+  implicit def caseClassParser[A, R <: HList, LR <: HList, K <: HList, KL <: HList](implicit
+      gen: Generic.Aux[A, R],
+      lgen: LabelledGeneric.Aux[A, LR],
+      reprParser: HListParser[R],
+      keys: Keys.Aux[LR, K],
+      mapper: Mapper.Aux[toName.type, K, KL],
+      toTraversable: ToTraversable.Aux[KL, List, String]): LineParser[A] =
     new LineParser[A] {
-      def apply(s: List[String]): LineResult[A] =
-        reprParser.apply(s).map(gen.from)
+      def apply(record: List[String]): LineResult[A] =
+        reprParser(record.zip(keys.apply().map(toName).toList)).map(gen.from _)
     }
 
   def apply[A](s: List[String])(implicit parser: LineParser[A]): LineResult[A] = parser(s)

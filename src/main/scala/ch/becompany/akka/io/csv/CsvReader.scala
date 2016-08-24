@@ -5,6 +5,8 @@ import cats.data.{NonEmptyList, Validated}
 import cats.data.Validated.{invalid, valid}
 import com.github.tototoshi.csv.{CSVParser, DefaultCSVFormat, QUOTE_MINIMAL, Quoting}
 
+import scala.util.{Failure, Success, Try}
+
 class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
 
   private val commentPattern = "^\\s+#".r
@@ -16,9 +18,10 @@ class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
   })
 
   private def parseLine(line: String): LineResult[T] = {
-    lineParser.parseLine(line) match {
-      case Some(fields) => LineParser[T](fields.map(_.trim))
-      case None => invalid(NonEmptyList(s"Invalid line: $line"))
+    Try(lineParser.parseLine(line)) match {
+      case Success(Some(fields)) => LineParser[T](fields.map(_.trim))
+      case Success(None) => invalid(NonEmptyList(s"Invalid line: $line"))
+      case Failure(e) => invalid(NonEmptyList(s"Invalid line: $line, ${e.getMessage}"))
     }
   }
 
