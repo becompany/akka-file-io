@@ -23,7 +23,7 @@ object HListParser {
     def apply(s: List[(String, String)]): LineResult[HNil] =
       s match {
         case Nil => Valid(HNil)
-        case h +: t => Invalid(NEL(s"""Expected end, got "$h"."""))
+        case (h, _) +: t => Invalid(NEL(s"""Expected end, got "$h"."""))
       }
   }
 
@@ -56,10 +56,13 @@ object LineParser {
       reprParser: HListParser[R],
       keys: Keys.Aux[LR, K],
       mapper: Mapper.Aux[toName.type, K, KL],
-      toTraversable: ToTraversable.Aux[KL, List, String]): LineParser[A] =
+      toList: ToTraversable.Aux[KL, List, String]): LineParser[A] =
     new LineParser[A] {
-      def apply(record: List[String]): LineResult[A] =
-        reprParser(record.zip(keys.apply().map(toName).toList)).map(gen.from _)
+      def apply(record: List[String]): LineResult[A] = {
+        val keyList = keys.apply().map(toName).toList
+        val pairs = record.zipAll(keyList, "", "").take(record.size)
+        reprParser(pairs).map(gen.from _)
+      }
     }
 
   def apply[A](s: List[String])(implicit parser: LineParser[A]): LineResult[A] = parser(s)
