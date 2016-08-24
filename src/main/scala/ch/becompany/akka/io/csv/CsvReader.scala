@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 
 class CsvReader[T](spec: CsvSpec = CsvSpec())(implicit parser: LineParser[T]) {
 
-  private val commentPattern = "^\\s+#".r
+  private val commentPattern = "^\\s*#".r
 
   private lazy val lineParser = new CSVParser(new DefaultCSVFormat() {
     override val delimiter: Char = spec.fieldDelimiter

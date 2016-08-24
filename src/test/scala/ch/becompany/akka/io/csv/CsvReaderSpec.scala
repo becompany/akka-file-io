@@ -39,7 +39,9 @@ class CsvReaderSpec extends FlatSpec with Matchers {
   }
 
   "CSV reader" should "ignore comments" in {
-    val src = Source.fromIterator(() => (" # comment" +: lines).iterator)
+    val src = Source.fromIterator(() => (Seq(
+      "# comment",
+      " # comment") ++ lines).iterator)
     reader.read(src).
       runWith(TestSink.probe[LineResult[Animal]]).
       request(3).
