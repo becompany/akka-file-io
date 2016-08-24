@@ -46,11 +46,7 @@ trait LineParser[T] {
 
 object LineParser {
 
-  trait toNameLP extends Poly1 {
-    implicit def default[A] = at[A](_ => "")
-  }
-
-  object toName extends toNameLP {
+  object toName extends Poly1 {
     implicit def keyToName[A] = at[Symbol with A](_.name)
   }
 
