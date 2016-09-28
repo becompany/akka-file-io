@@ -5,7 +5,7 @@ object Dependencies {
   object versions {
     val scalaTest = "2.2.6"
     val jUniversalChardet = "1.0.3"
-    val akka = "2.4.8"
+    val akka = "2.4.10"
     val shapeless = "2.3.1"
     val scalaCsv = "1.3.1"
     val commonsIo = "2.5"
